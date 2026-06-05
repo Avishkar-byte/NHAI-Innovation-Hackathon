@@ -5,11 +5,11 @@
 // ================================================================
 
 import { AppState } from './state.js';
-import { openDB } from './db.js';
+import { openDB, syncDataToCloud } from './db.js';
 import { seedDemoData } from '../assets/demo-data.js';
 import { initMediaPipe, startCamera, attachStreamToVideo, startFrameLoop, startVideoFallback } from './mediapipe.js';
-import { switchScreen, showToast, initModal, showCameraError, hideCameraError, setStatus } from './ui.js';
-import { initScanWatcher, cleanupScan, resetScan } from './screens/scan.js';
+import { switchScreen, showToast, initModal, showCameraError, hideCameraError, setStatus, initNavigation } from './ui.js';
+import { initScanScreen, cleanupScan, resetScan } from './screens/scan.js';
 import { initEnrollScreen } from './screens/enroll-screen.js';
 import { renderLogs, initSyncButton } from './screens/logs.js';
 import { renderAdmin, initAdminScreen } from './screens/admin.js';
@@ -37,9 +37,12 @@ async function boot() {
     initTabBar();
 
     // 5. Init screen modules
-    initEnrollScreen(() => handleScreenSwitch('scan'));
-    initSyncButton();
+    initEnrollScreen();
+    initScanScreen();
     initAdminScreen();
+
+    // Attempt background sync if Render URL is configured manually in db.js
+    syncDataToCloud().catch(err => console.log('Background sync failed/skipped:', err.message));
 
     // 6. Get DOM elements
     const scanVideo = $('scan-video');

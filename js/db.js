@@ -101,10 +101,16 @@ export function clearLogs() {
 
 // ==================== SYNC (RENDER) ====================
 
-export async function syncDataToCloud(backendUrl) {
-  if (!backendUrl) throw new Error("No backend URL configured.");
+// PASTE YOUR RENDER URL HERE (e.g., 'https://datalake3-backend.onrender.com')
+const RENDER_BACKEND_URL = '';
+
+export async function syncDataToCloud() {
+  if (!RENDER_BACKEND_URL) {
+    console.warn("Sync skipped: No RENDER_BACKEND_URL configured in js/db.js");
+    return;
+  }
   
-  const cleanUrl = backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl;
+  const cleanUrl = RENDER_BACKEND_URL.endsWith('/') ? RENDER_BACKEND_URL.slice(0, -1) : RENDER_BACKEND_URL;
 
   // 1. Sync Workers
   const workers = await getAllWorkers();

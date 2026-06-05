@@ -4,7 +4,7 @@
 // ================================================================
 
 import { AppState } from '../state.js';
-import { getAllWorkers, clearWorkers, clearLogs, syncDataToCloud } from '../db.js';
+import { getAllWorkers, clearWorkers, clearLogs } from '../db.js';
 import { seedDemoData } from '../../assets/demo-data.js';
 import { showToast, showConfirm } from '../ui.js';
 import { renderLogs } from './logs.js';
@@ -92,47 +92,6 @@ export function initAdminScreen() {
         await clearLogs();
         showToast('All logs cleared', 'warning');
         renderLogs();
-      }
-    });
-  }
-
-  // Cloud Sync
-  const renderInput = $('render-url-input');
-  const saveUrlBtn = $('save-url-btn');
-  const syncBtn = $('sync-cloud-btn');
-
-  if (renderInput) {
-    const savedUrl = localStorage.getItem('renderBackendUrl');
-    if (savedUrl) renderInput.value = savedUrl;
-  }
-
-  if (saveUrlBtn) {
-    saveUrlBtn.addEventListener('click', () => {
-      const url = renderInput.value.trim();
-      if (url) {
-        localStorage.setItem('renderBackendUrl', url);
-        showToast('Render URL saved!', 'success');
-      }
-    });
-  }
-
-  if (syncBtn) {
-    syncBtn.addEventListener('click', async () => {
-      const url = localStorage.getItem('renderBackendUrl');
-      if (!url) {
-        showToast('Please save a Render URL first', 'fail');
-        return;
-      }
-      
-      const originalText = syncBtn.textContent;
-      syncBtn.textContent = 'SYNCING...';
-      try {
-        await syncDataToCloud(url);
-        showToast('Successfully synced to cloud!', 'success');
-      } catch (err) {
-        showToast(err.message || 'Sync failed', 'fail');
-      } finally {
-        syncBtn.textContent = originalText;
       }
     });
   }
