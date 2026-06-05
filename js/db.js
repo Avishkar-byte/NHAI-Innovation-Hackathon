@@ -98,3 +98,33 @@ export function clearLogs() {
     tx.onerror = () => reject(tx.error);
   });
 }
+
+// ==================== SYNC (RENDER) ====================
+
+export async function syncDataToCloud(backendUrl) {
+  if (!backendUrl) throw new Error("No backend URL configured.");
+  
+  const cleanUrl = backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl;
+
+  // 1. Sync Workers
+  const workers = await getAllWorkers();
+  if (workers.length > 0) {
+    const wRes = await fetch(`${cleanUrl}/api/sync/workers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workers })
+    });
+    if (!wRes.ok) throw new Error("Failed to sync workers");
+  }
+
+  // 2. Sync Logs
+  const logs = await getAllLogs();
+  if (logs.length > 0) {
+    const lRes = await fetch(`${cleanUrl}/api/sync/logs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logs })
+    });
+    if (!lRes.ok) throw new Error("Failed to sync logs");
+  }
+}
