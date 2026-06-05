@@ -241,7 +241,14 @@
               <input type="range" id="match-slider" min="60" max="99" value="82">
             </div>
           </div>
-          <div class="danger-zone">
+          <div class="sync-section" style="margin-top: 16px; padding: 16px; background: rgba(61, 142, 240, 0.05); border: 1px solid rgba(61, 142, 240, 0.1); border-radius: 12px;">
+            <div class="admin-section-title" style="color: var(--accent-blue)">Cloud Sync (Render)</div>
+            <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">Paste your Render Backend URL here to sync offline data.</p>
+            <input type="text" id="render-url-input" placeholder="https://your-app.onrender.com" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-family: var(--font-mono); font-size: 11px; margin-bottom: 12px; outline: none;">
+            <button id="save-url-btn" style="width: 100%; padding: 10px; background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; margin-bottom: 8px;">SAVE URL</button>
+            <button id="sync-cloud-btn" style="width: 100%; padding: 10px; background: var(--accent-blue); border: none; color: white; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer;">FORCE SYNC LOGS & FACES</button>
+          </div>
+          <div class="danger-zone" style="margin-top: 16px;">
             <div class="admin-section-title">Danger Zone</div>
             <button class="danger-btn" id="clear-enrollments-btn">CLEAR ALL ENROLLMENTS</button>
             <button class="danger-btn" id="clear-logs-btn">CLEAR ALL LOGS</button>
