@@ -2,6 +2,7 @@ services:
   - type: web
     name: datalake3-backend
     env: node
+    plan: free
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
     envVars:
@@ -14,5 +15,6 @@ services:
 
 databases:
   - name: datalake3-db
+    plan: free
     databaseName: datalake3
     user: datalake_admin
