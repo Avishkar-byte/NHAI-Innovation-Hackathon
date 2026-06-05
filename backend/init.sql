@@ -1,0 +1,16 @@
+CREATE TABLE IF NOT EXISTS workers (
+  id SERIAL PRIMARY KEY,
+  employee_id VARCHAR(50) UNIQUE NOT NULL,
+  embedding JSONB NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS attendance_logs (
+  id SERIAL PRIMARY KEY,
+  employee_id VARCHAR(50) NOT NULL,
+  timestamp TIMESTAMP NOT NULL,
+  liveness_score DECIMAL(5,2) NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (employee_id) REFERENCES workers(employee_id)
+);
