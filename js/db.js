@@ -102,7 +102,7 @@ export function clearLogs() {
 // ==================== SYNC (RENDER) ====================
 
 // PASTE YOUR RENDER URL HERE (e.g., 'https://datalake3-backend.onrender.com')
-const RENDER_BACKEND_URL = '';
+const RENDER_BACKEND_URL = 'https://datalake3-backend.onrender.com';
 
 export async function syncDataToCloud() {
   if (!RENDER_BACKEND_URL) {
