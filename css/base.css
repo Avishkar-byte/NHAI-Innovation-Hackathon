@@ -1,0 +1,267 @@
+/* ================================================================
+   DataLake 3.0 — base.css
+   CSS Variables, Reset, Typography, Phone Shell, Tab Bar
+   ================================================================ */
+
+/* === CSS Variables === */
+:root {
+  --bg-base: #0A0C0F;
+  --bg-card: #111318;
+  --bg-elevated: #1A1D24;
+  --accent-green: #00E5A0;
+  --accent-green-dim: rgba(0, 229, 160, 0.08);
+  --accent-amber: #F5A623;
+  --accent-amber-dim: rgba(245, 166, 35, 0.08);
+  --accent-red: #FF4757;
+  --accent-red-dim: rgba(255, 71, 87, 0.08);
+  --accent-blue: #3D8EF0;
+  --accent-blue-dim: rgba(61, 142, 240, 0.08);
+  --text-primary: #F0F2F5;
+  --text-secondary: #7A8190;
+  --text-muted: #3D4250;
+  --border: #1F2330;
+  --border-active: #2A3040;
+  --font-mono: 'DM Mono', monospace;
+  --font-sans: 'DM Sans', sans-serif;
+}
+
+/* === Reset === */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #050608;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === Desktop Background === */
+.desktop-bg {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  background: radial-gradient(ellipse at center, #0c0e12 0%, #050608 70%);
+  position: relative;
+}
+
+/* === Phone Frame === */
+.phone-frame {
+  width: 390px;
+  height: 844px;
+  flex-shrink: 0;
+  margin: 40px auto; /* Margin to separate from top/bottom and center */
+  border-radius: 40px;
+  border: 1px solid var(--border);
+  background: var(--bg-base);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(0, 0, 0, 0.2);
+}
+
+/* === Status Bar === */
+.status-bar {
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  position: relative;
+  z-index: 10;
+}
+
+.status-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-bar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.demo-badge {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--accent-amber);
+  background: var(--accent-amber-dim);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-bar-right svg {
+  color: var(--text-secondary);
+}
+
+/* === Content Area === */
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  scrollbar-width: none;
+}
+
+.content-area::-webkit-scrollbar {
+  display: none;
+}
+
+/* === Screens === */
+.screen {
+  display: none;
+  min-height: 100%;
+  padding-bottom: 16px;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* === Tab Bar === */
+.tab-bar {
+  height: 72px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  border-top: 1px solid var(--border);
+  background: var(--bg-base);
+  padding-top: 8px;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  position: relative;
+  padding: 4px 12px;
+  transition: all 0.2s;
+}
+
+.tab-item svg {
+  width: 22px;
+  height: 22px;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.tab-item span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.tab-item.active svg {
+  color: var(--accent-green);
+}
+
+.tab-item.active span {
+  color: var(--accent-green);
+}
+
+.tab-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tab-item.active .tab-dot {
+  opacity: 1;
+}
+
+/* === Home Indicator === */
+.home-indicator {
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-indicator-bar {
+  width: 134px;
+  height: 5px;
+  border-radius: 2.5px;
+  background: var(--border-active);
+}
+
+/* === Hackathon Watermark === */
+.hackathon-watermark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 40px;
+  padding: 0 20px;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.hackathon-watermark:hover {
+  opacity: 1;
+}
+
+.nhai-logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  background: white;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.hackathon-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.built-for {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent-green);
+  letter-spacing: 1px;
+}
+
+.nhai-full {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+}

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataLake 3.0 — Field Auth</title>
+  <meta name="description" content="Offline Biometric Authentication Prototype — Edge AI Field Worker Authentication">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- MediaPipe CDN — plain scripts, NOT modules. Must load before app JS. -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/screens.css">
+</head>
+<body>
+
+  <div class="desktop-bg">
+    <div class="phone-frame">
+
+      <!-- STATUS BAR -->
+      <div class="status-bar">
+        <div class="status-bar-left"><span>9:41</span></div>
+        <div class="status-bar-center"><span class="demo-badge">DEMO MODE</span></div>
+        <div class="status-bar-right">
+          <svg width="16" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="0.5"/><rect x="4.5" y="5" width="3" height="7" rx="0.5"/><rect x="9" y="2" width="3" height="10" rx="0.5"/><rect x="13.5" y="0" width="3" height="12" rx="0.5"/></svg>
+          <svg width="15" height="12" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 5a16 16 0 0120 0"/><path d="M6 9.5a10 10 0 0112 0"/><path d="M10 14a4 4 0 014 0"/></svg>
+          <svg width="22" height="11" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="2" y="3" width="16" height="6" rx="1"/><path d="M22 4.5v3a1.5 1.5 0 000-3z"/></svg>
+        </div>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="content-area" id="content-area">
+
+        <!-- SCAN SCREEN -->
+        <div id="screen-scan" class="screen active">
+          <div class="scan-header">
+            <span class="scan-header-title">DataLake 3.0</span>
+            <div class="scan-header-right">
+              <span class="scan-header-badge">FIELD AUTH</span>
+              <button class="scan-add-btn" id="scan-add-btn" title="Enroll new worker">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="camera-viewport" id="scan-viewport">
+            <video id="scan-video" class="camera-feed" autoplay playsinline muted></video>
+            <canvas id="scan-canvas" class="camera-canvas"></canvas>
+            <div class="scan-frame">
+              <div class="corner tl"></div>
+              <div class="corner tr"></div>
+              <div class="corner bl"></div>
+              <div class="corner br"></div>
+            </div>
+            <div class="sweep-line" id="sweep-line"></div>
+            <div class="face-guide-container">
+              <svg class="progress-ring" viewBox="0 0 220 220">
+                <circle class="progress-ring-bg" cx="110" cy="110" r="104"/>
+                <circle class="progress-ring-fill" id="progress-ring-fill" cx="110" cy="110" r="104"
+                  stroke-dasharray="653.45" stroke-dashoffset="653.45" transform="rotate(-90 110 110)"/>
+              </svg>
+              <div class="face-guide-ring" id="face-guide-ring"></div>
+            </div>
+            <div class="instruction-card" id="instruction-card">
+              <div class="instruction-text" id="instruction-text"></div>
+            </div>
+            <div class="camera-error-card" id="camera-error">
+              <div class="camera-error-icon">📷</div>
+              <div class="camera-error-title" id="camera-error-title">CAMERA ACCESS REQUIRED</div>
+              <button class="camera-error-btn" id="camera-error-btn">GRANT PERMISSION</button>
+            </div>
+            <div class="warning-banner" id="scan-warning"></div>
+            <div class="loading-overlay" id="mp-loading">
+              <div class="spinner"></div>
+              <div class="loading-text">AI MODELS LOADING...</div>
+            </div>
+          </div>
+          <div class="status-strip">
+            <div class="status-dot gray" id="status-dot"></div>
+            <span class="status-text" id="status-text">Initializing...</span>
+          </div>
+          <div class="signal-panel">
+            <div class="signal-pill idle" id="pill-ear">EAR</div>
+            <div class="signal-pill idle" id="pill-flow">FLOW</div>
+            <div class="signal-pill idle" id="pill-left">LEFT</div>
+            <div class="signal-pill idle" id="pill-right">RIGHT</div>
+            <div class="signal-pill idle" id="pill-texture">TEX</div>
+            <div class="signal-pill idle" id="pill-depth">DEPTH</div>
+          </div>
+          <div class="confidence-display">
+            <span class="confidence-value" id="confidence-value">0%</span>
+            <span class="confidence-label">LIVENESS SCORE</span>
+          </div>
+        </div>
+
+        <!-- ENROLL SCREEN -->
+        <div id="screen-enroll" class="screen">
+          <div class="enroll-header">ENROLL WORKER</div>
+          <div class="form-section">
+            <div class="form-group">
+              <label>Employee ID</label>
+              <input type="text" class="form-input" id="enroll-id" placeholder="EMP-XXXX" maxlength="8">
+            </div>
+            <div class="form-group">
+              <label>Worker Name</label>
+              <input type="text" class="form-input" id="enroll-name" placeholder="Full Name">
+            </div>
+            <div class="form-group">
+              <label>Role / Designation</label>
+              <input type="text" class="form-input" id="enroll-role" placeholder="Optional">
+            </div>
+          </div>
+          <div class="enroll-camera-section">
+            <div class="camera-viewport camera-viewport-sm" id="enroll-viewport">
+              <video id="enroll-video" class="camera-feed" autoplay playsinline muted></video>
+              <canvas id="enroll-canvas" class="camera-canvas"></canvas>
+              <div class="face-guide-container" style="width:160px;height:160px">
+                <svg class="progress-ring" viewBox="0 0 160 160" style="width:160px;height:160px">
+                  <circle class="progress-ring-bg" cx="80" cy="80" r="75"/>
+                </svg>
+                <div class="face-guide-ring" id="enroll-face-guide" style="width:150px;height:150px;top:5px;left:5px"></div>
+              </div>
+              <div class="camera-error-card" id="enroll-camera-error">
+                <div class="camera-error-icon">📷</div>
+                <div class="camera-error-title">CAMERA REQUIRED</div>
+                <button class="camera-error-btn" id="enroll-camera-error-btn">GRANT</button>
+              </div>
+            </div>
+          </div>
+          <div class="capture-progress">
+            <span class="capture-count">CAPTURES: <span id="capture-count">0</span> / 5</span>
+            <div class="capture-circles" id="capture-circles">
+              <div class="capture-circle" data-idx="0"></div>
+              <div class="capture-circle" data-idx="1"></div>
+              <div class="capture-circle" data-idx="2"></div>
+              <div class="capture-circle" data-idx="3"></div>
+              <div class="capture-circle" data-idx="4"></div>
+            </div>
+          </div>
+          <div class="angle-instruction" id="angle-instruction">FACE FORWARD</div>
+          <button class="capture-btn" id="capture-btn" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M3 9a2 2 0 012-2h2l1.5-2h7L17 7h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            </svg>
+          </button>
+          <button class="register-btn" id="register-btn">REGISTER WORKER</button>
+        </div>
+
+        <!-- LOGS SCREEN -->
+        <div id="screen-logs" class="screen">
+          <div class="logs-header">
+            <span class="logs-header-title">ATTENDANCE LOGS</span>
+            <span class="sync-badge offline" id="sync-badge">OFFLINE</span>
+          </div>
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-value green" id="stat-today">0</div>
+              <div class="stat-label">TODAY</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value red" id="stat-spoofs">0</div>
+              <div class="stat-label">SPOOFS</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value amber" id="stat-pending">0</div>
+              <div class="stat-label">PENDING</div>
+            </div>
+          </div>
+          <div class="log-list" id="log-list"></div>
+          <div class="sync-progress" id="sync-progress">
+            <div class="sync-progress-fill" id="sync-progress-fill"></div>
+          </div>
+          <button class="sync-btn" id="sync-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 2v6h-6M3 22v-6h6"/>
+              <path d="M21 12A9 9 0 006 5.3L3 8M3 12a9 9 0 0015 6.7l3-2.7"/>
+            </svg>
+            SYNC TO AWS
+          </button>
+        </div>
+
+        <!-- ADMIN SCREEN -->
+        <div id="screen-admin" class="screen">
+          <div class="admin-header">SYSTEM ADMIN</div>
+          <div class="admin-section">
+            <div class="worker-count-card">
+              <div class="worker-count-value" id="admin-worker-count">0</div>
+              <div class="worker-count-label">WORKERS ENROLLED</div>
+            </div>
+          </div>
+          <div class="admin-section">
+            <div class="admin-section-title">Model Status</div>
+            <div class="model-card">
+              <span class="model-name">BlazeFace</span>
+              <span class="model-status loaded" id="model-blazeface">LOADED</span>
+            </div>
+            <div class="model-card">
+              <span class="model-name">Face Mesh (468)</span>
+              <span class="model-status loaded" id="model-facemesh">LOADED</span>
+            </div>
+            <div class="model-card">
+              <span class="model-name">MobileFaceNet</span>
+              <span class="model-status simulated">SIMULATED</span>
+            </div>
+            <p class="admin-note">Embedding: Geometric (demo) — production uses MobileFaceNet INT8</p>
+            <div class="model-card" style="margin-top:8px">
+              <span class="model-name">Optical Flow</span>
+              <span class="model-status simulated">LIGHTWEIGHT</span>
+            </div>
+          </div>
+          <div class="admin-section">
+            <div class="admin-section-title">Storage</div>
+            <div class="storage-card">
+              <div class="storage-text" id="storage-text">IndexedDB Usage: ~0KB / 0 workers</div>
+              <div class="storage-bar-bg">
+                <div class="storage-bar-fill" id="storage-bar-fill" style="width:0%"></div>
+              </div>
+            </div>
+            <p class="admin-note" style="margin-top:6px">Production uses SQLCipher encrypted SQLite. Browser demo uses IndexedDB.</p>
+          </div>
+          <div class="threshold-section">
+            <div class="admin-section-title" style="padding:0 0 8px">Thresholds</div>
+            <div class="threshold-group">
+              <label>Liveness Threshold <span class="threshold-val" id="liveness-val">0.72</span></label>
+              <input type="range" id="liveness-slider" min="50" max="95" value="72">
+            </div>
+            <div class="threshold-group">
+              <label>Match Threshold <span class="threshold-val" id="match-val">0.82</span></label>
+              <input type="range" id="match-slider" min="60" max="99" value="82">
+            </div>
+          </div>
+          <div class="danger-zone">
+            <div class="admin-section-title">Danger Zone</div>
+            <button class="danger-btn" id="clear-enrollments-btn">CLEAR ALL ENROLLMENTS</button>
+            <button class="danger-btn" id="clear-logs-btn">CLEAR ALL LOGS</button>
+          </div>
+          <div class="about-section">
+            <div class="about-line">DataLake 3.0 — Field Auth v0.1</div>
+            <div class="about-line">Edge AI • Offline • No cloud dependency</div>
+            <div class="about-line">Prototype for Hackathon 7.0</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB BAR -->
+      <div class="tab-bar">
+        <div class="tab-item active" data-screen="scan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M2 7V2h5M17 2h5v5M22 17v5h-5M7 22H2v-5"/>
+            <circle cx="12" cy="12" r="3.5"/>
+          </svg>
+          <span>Scan</span><div class="tab-dot"></div>
+        </div>
+        <div class="tab-item" data-screen="enroll">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <line x1="19" y1="8" x2="19" y2="14"/>
+            <line x1="16" y1="11" x2="22" y2="11"/>
+          </svg>
+          <span>Enroll</span><div class="tab-dot"></div>
+        </div>
+        <div class="tab-item" data-screen="logs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="8" y1="13" x2="16" y2="13"/>
+            <line x1="8" y1="17" x2="13" y2="17"/>
+          </svg>
+          <span>Logs</span><div class="tab-dot"></div>
+        </div>
+        <div class="tab-item" data-screen="admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+            <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+            <line x1="1" y1="14" x2="7" y2="14"/>
+            <line x1="9" y1="8" x2="15" y2="8"/>
+            <line x1="17" y1="16" x2="23" y2="16"/>
+          </svg>
+          <span>Admin</span><div class="tab-dot"></div>
+        </div>
+      </div>
+
+      <!-- HOME INDICATOR -->
+      <div class="home-indicator"><div class="home-indicator-bar"></div></div>
+
+    </div>
+
+    <!-- HACKATHON WATERMARK -->
+    <div class="hackathon-watermark">
+      <img src="assets/nhai-logo.png" alt="NHAI Logo" class="nhai-logo">
+      <div class="hackathon-text">
+        <span class="built-for">Built for NHAI Innovation Hackathon 7.0</span>
+        <span class="nhai-full">National Highways Authority of India</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL (outside phone shell) -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-message" id="modal-message"></div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" id="modal-cancel">CANCEL</button>
+        <button class="modal-btn confirm" id="modal-confirm">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- RESULT CARD (fixed position overlay) -->
+  <div class="result-card" id="result-card">
+    <div class="result-name" id="result-name"></div>
+    <div class="result-detail" id="result-detail-1"></div>
+    <div class="result-detail" id="result-detail-2"></div>
+    <div class="result-detail" id="result-detail-3"></div>
+    <span class="result-badge" id="result-badge"></span>
+  </div>
+
+  <!-- App JS — ES module entry point -->
+  <script type="module" src="js/main.js"></script>
+
+</body>
+</html>
